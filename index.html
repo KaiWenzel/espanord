@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Redirecting...</title>
+    
+    <script>
+    !function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
+    pintrk('load', '[YOUR_PINTEREST_TAG_ID]'); // <-- REPLACE THIS WITH YOUR ID
+    pintrk('page'); // This is the standard PageVisit event
+    </script>
+
+    <script>
+        // 2. FIRE THE CONVERSION EVENT and redirect
+
+        const discordURL = "https://discord.gg/VydqsnRPRg";
+
+        // Wait for the window to load completely
+        window.onload = function() {
+            // FIRE THE SPECIFIC CONVERSION EVENT
+            pintrk('track', 'signup'); 
+            
+            // Wait a very short period (e.g., 200ms) before redirecting
+            // This gives the 'signup' event a moment to register after the page loads
+            setTimeout(function() {
+                window.location.href = discordURL;
+            }, 200); 
+        };
+    </script>
+</head>
+<body>
+    <p>Loading your Discord invite...</p>
+    <noscript>
+        <p>If you are not redirected, please <a href="https://discord.gg/VydqsnRPRg">click here</a>.</p>
+    </noscript>
+</body>
+</html>
