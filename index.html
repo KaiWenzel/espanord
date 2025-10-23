@@ -3,7 +3,6 @@
 <head>
     <title>Redirecting...</title>
     
-    <!-- Pinterest Tag -->
     <script>
         !function(e){if(!window.pintrk){window.pintrk = function () {
         window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var
@@ -11,30 +10,63 @@
           t=document.createElement("script");t.async=!0,t.src=e;var
           r=document.getElementsByTagName("script")[0];
           r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
-        pintrk('load', '2613724268480', {em: '<user_email_address>'});
-        pintrk('page');
+        // NOTE: The 'em' (email) parameter should be removed or dynamically set.
+        pintrk('load', '2613724268480'); 
+        pintrk('page'); // Initial page view signal
     </script>
     <noscript>
         <img height="1" width="1" style="display:none;" alt=""
-          src="https://ct.pinterest.com/v3/?event=init&tid=2613724268480&pd[em]=<hashed_email_address>&noscript=1" />
+          src="https://ct.pinterest.com/v3/?event=init&tid=2613724268480&noscript=1" />
     </noscript>
-    <!-- end Pinterest Tag -->
-
-
     <script>
-        // 2. FIRE THE CONVERSION EVENT and redirect
-
+        // --- CONFIGURATION ---
+        const COOKIE_NAME = 'campaign_ad_id';
         const discordURL = "https://discord.gg/VydqsnRPRg";
+
+        // Helper function to read a cookie by name
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Helper function to delete a cookie (sets expiration to the past)
+        function deleteCookie(name) {
+            // NOTE: The domain must match the domain the cookie was set on (including the leading dot)
+            document.cookie = name + '=; domain=.xn--espaord-7za.com; path=/; max-age=0; secure; samesite=Lax'; 
+            console.log(`[Destination]: Cookie deleted: ${name}`);
+        }
 
         // Wait for the window to load completely
         window.onload = function() {
-            // FIRE THE SPECIFIC CONVERSION EVENT
-            pintrk('track', 'signup'); 
+            let adId = getCookie(COOKIE_NAME);
+            let eventData = {};
+            
+            if (adId) {
+                // If ID is found, add it to the event data object
+                eventData = { ad_id: adId };
+                console.log(`[Destination]: Retrieved Ad ID from cookie: ${adId}`);
+                
+                // IMPORTANT: Delete the cookie so it doesn't get used again
+                deleteCookie(COOKIE_NAME); 
+            } else {
+                console.log("[Destination]: No Ad ID cookie found. Firing 'signup' without attribution.");
+            }
+
+            // FIRE THE SPECIFIC CONVERSION EVENT, passing eventData (which may contain ad_id)
+            if (window.pintrk) {
+                pintrk('track', 'signup', eventData); 
+                console.log("[Destination]: Pinterest 'signup' event fired.");
+            }
             
             // Wait a very short period (e.g., 200ms) before redirecting
-            // This gives the 'signup' event a moment to register after the page loads
             setTimeout(function() {
-                window.location.href = discordURL;
+                window.location.replace(discordURL); // Use replace for better history control
             }, 200); 
         };
     </script>
