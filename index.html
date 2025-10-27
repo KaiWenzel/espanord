@@ -19,57 +19,58 @@
           src="https://ct.pinterest.com/v3/?event=init&tid=2612894781060&noscript=1" />
     </noscript>
     <script>
-        // --- CONFIGURATION ---
-        const COOKIE_NAME = 'campaign_ad_id';
-        const discordURL = "https://discord.gg/VydqsnRPRg";
+        // --- CONFIGURATION ---
+        const COOKIE_NAME = 'campaign_ad_id';
+        const discordURL = "https://discord.gg/VydqsnRPRg";
+        const FINAL_DELAY_MS = 1000; // Increased delay to 1 full second for reliable conversion firing
 
-        // Helper function to read a cookie by name
-        function getCookie(name) {
-            const nameEQ = name + "=";
-            const ca = document.cookie.split(';');
-            for(let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-            }
-            return null;
-        }
+        // Helper function to read a cookie by name
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
 
-        // Helper function to delete a cookie (sets expiration to the past)
-        function deleteCookie(name) {
-            // NOTE: The domain must match the domain the cookie was set on (including the leading dot)
-            document.cookie = name + '=; domain=.xn--espaord-7za.com; path=/; max-age=0; secure; samesite=Lax'; 
-            console.log(`[Destination]: Cookie deleted: ${name}`);
-        }
+        // Helper function to delete a cookie
+        function deleteCookie(name) {
+            // Ensure the domain is correct for deletion
+            document.cookie = name + '=; domain=.xn--espaord-7za.com; path=/; max-age=0; secure; samesite=Lax'; 
+            console.log(`[Destination]: Cookie deleted: ${name}`);
+        }
 
-        // Wait for the window to load completely
-        window.onload = function() {
-            let adId = getCookie(COOKIE_NAME);
-            let eventData = {};
-            
-            if (adId) {
-                // If ID is found, add it to the event data object
-                eventData = { ad_id: adId };
-                console.log(`[Destination]: Retrieved Ad ID from cookie: ${adId}`);
-                
-                // IMPORTANT: Delete the cookie so it doesn't get used again
-                deleteCookie(COOKIE_NAME); 
-            } else {
-                console.log("[Destination]: No Ad ID cookie found. Firing 'signup' without attribution.");
-            }
+        // Execute tracking and redirect immediately (no need to wait for full window load)
+        (function fireSignupAndRedirect() {
+            let adId = getCookie(COOKIE_NAME);
+            let eventData = {};
+            
+            if (adId) {
+                // FIX: Use 'epk' for attribution instead of 'ad_id'
+                eventData = { epk: adId };
+                console.log(`[Destination]: Retrieved Ad ID from cookie and using EPK: ${adId}`);
+                
+                // Delete the cookie immediately after reading
+                deleteCookie(COOKIE_NAME); 
+            } else {
+                console.log("[Destination]: No Ad ID cookie found. Firing 'signup' without attribution.");
+            }
 
-            // FIRE THE SPECIFIC CONVERSION EVENT, passing eventData (which may contain ad_id)
-            if (window.pintrk) {
-                pintrk('track', 'signup', eventData); 
-                console.log("[Destination]: Pinterest 'signup' event fired.");
-            }
-            
-            // Wait a very short period (e.g., 200ms) before redirecting
-            setTimeout(function() {
-                window.location.replace(discordURL); // Use replace for better history control
-            }, 200); 
-        };
-    </script>
+            // FIRE THE SPECIFIC CONVERSION EVENT
+            if (window.pintrk) {
+                pintrk('track', 'signup', eventData); 
+                console.log("[Destination]: Pinterest 'signup' event fired.");
+            }
+            
+            // Wait a full second before redirecting
+            setTimeout(function() {
+                window.location.replace(discordURL);
+            }, FINAL_DELAY_MS); 
+        })();
+    </script>
 </head>
 <body>
     <p>Loading your Discord invite...</p>
